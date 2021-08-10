@@ -29,15 +29,18 @@ int main()
 	//Rally file description writefds & exceptfds by NULL
 	ret = select(STDIN_FILENO + 1, &readfds, NULL, NULL, &t_v);
 	
-	if (ret == -1){
+	if (ret == -1)
+	{
 		perror("Select error:\n");
 		return 1;
 	}
-	else if{
+	else if(ret)
+	{
 		printf("Request timeout\n");
 		return 0;
 	}
-	else{
+	else
+	{
 	// check whether stdin in readfds or not?
 		if(FD_ISSET(STDIN_FILENO, &readfds))
 		{
