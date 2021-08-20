@@ -14,16 +14,40 @@ using namespace rapidjson;
 
 using namespace std;
 
-void read_doc(fstream &fs);
-void write_doc(fstream &fs);
-void date_format(string &buffer);
+typedef struct date
+{
+  string day;
+  string month;
+  string year;
+
+  date()
+  {
+    day.clear();
+    month.clear();
+    year.clear();
+  }
+
+}DATE;
+
+int read_doc(string f_name);
+int write_doc(string f_name);
+void date_format(string &buffer, DATE &dt);
 
 int main()
 {
-  /*Declare local varialbe to store the file descriptor*/
+  //read_doc("io.conf");
+  write_doc("io.conf");
+
+  cout << "End program"<<endl;
+  return 0;
+}
+int read_doc(string f_name)
+{
+  cout << "Reading io.conf ..."<<endl;
+    /*Declare local varialbe to store the file descriptor*/
   fstream fs;
   /*Open file with read & write mode*/
-  fs.open("io.conf",ios::in | ios::out);
+  fs.open(f_name.c_str(),ios::in);
   
   /*Check file accessible*/
   if(fs.fail())
@@ -31,19 +55,6 @@ int main()
       perror("Open file fail");
       return -1;
   }
-  else
-  {
-     //dread_doc(fs);
-     write_doc(fs);
-  }
-
-  fs.close();
-  cout << "End program"<<endl;
-  return 0;
-}
-void read_doc(fstream &fs)
-{
-  cout << "Reading io.conf ..."<<endl;
       
   IStreamWrapper isw(fs);
   Document mydoc;
@@ -76,22 +87,39 @@ void read_doc(fstream &fs)
   {
     cout << "Object \"date\" does not exist"<< endl;
   }
+  fs.close();
+  return 1;
 }
 
-void write_doc(fstream &fs)
+int write_doc(string f_name)
 {
-  string buffer;
-  IStreamWrapper isw(fs);
+  /*Declare local varialbe to store the file descriptor*/
+  fstream fs;
+
+  string date_buffer;
+  string ver_buffer;
   Document mydoc;
+  DATE dt;
+  /*Open file with read & write mode*/
+  fs.open(f_name.c_str(),ios::in);
+  
+  /*Check file accessible*/
+  if(fs.fail())
+  {
+      perror("Open file fail");
+      return -1;
+  }
+  
+  IStreamWrapper isw(fs);
   mydoc.ParseStream(isw);
   
   if (mydoc.HasMember("version"))
   {
       cin.clear();
+      ver_buffer.clear();
       cout << "Write new version: ";
-      getline(cin,buffer,'\n');
-      mydoc["version"].SetString(buffer.c_str(),buffer.length());
-      buffer.clear();
+      getline(cin,ver_buffer,'\n');
+      mydoc["version"].SetString(ver_buffer.c_str(),ver_buffer.length());
   }
   else
   {
@@ -101,35 +129,45 @@ void write_doc(fstream &fs)
   if(mydoc.HasMember("date"))
   {
     cin.clear();
+    date_buffer.clear();
     cout << "Write new date: ";
-    getline(cin,buffer,'\n');
-    date_format(buffer);
-    //cout << buffer <<endl;
+    getline(cin,date_buffer,'\n');
+    date_format(date_buffer,dt);
+    mydoc["date"]["day"].SetString(dt.day.c_str(),dt.day.length());
+    mydoc["date"]["month"].SetString(dt.month.c_str(),dt.month.length());
+    mydoc["date"]["year"].SetString(dt.year.c_str(),dt.year.length());
 
   }
   else
   {
     cout << "Object \"date\" does not exist"<<endl;
   }
+  
+  fs.close();
+
+  fs.open(f_name.c_str(),ios::out);
+
+  OStreamWrapper osw(fs);
+  Writer<OStreamWrapper> writer(osw);
+  mydoc.Accept(writer);
+  fs.sync();
+  fs.close();
+
+  return 1;
 }
-void date_format(string &buffer)
+void date_format(string &buffer, DATE &dt)
 {
-  cout << buffer<<endl;
-  regex rg("(\[0-9]{2})/(\[0-9]{2})/(\[0-9]{4})");
+  regex rg("^(\[0-9]{2})/(\[0-9]{2})/(\[0-9]{4})");
 	smatch match;
   if (regex_search(buffer, match, rg) == true)
 	{
-		cout << "Match size = " << match.size() << endl;
-    buffer.clear();
-    cout << "Match: "<< match.str(0)<< endl;
     buffer = match.str(0);
-    for(int i = 0;i<match.size();i++)
-    {
-      cout << match.str(i)<<endl;
-    }
+    dt.day = match.str(1);
+    dt.month = match.str(2);
+    dt.year = match.str(3);
 	}
 	else
 	{
-		cout << "string is not valid" << endl;
+		cout << "String is not valid recommend: dd/mm/yyyy" << endl;
 	}
 }
