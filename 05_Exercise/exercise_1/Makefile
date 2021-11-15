@@ -14,10 +14,13 @@ $(OUTPUT_PATH)/main.o: $(SRC_DIR)/main.cpp
 	$(CC) $(CC_OPT) $(SRC_DIR)/main.cpp -o $(OUTPUT_PATH)/main.o $(CFLAGS)$(INCLUDE_DIR)
 
 
-all: $(OUTPUT_PATH)/main.o
+build: $(OUTPUT_PATH)/main.o
 	@echo "Create executed file"
 	$(CC) $(OUTPUT_PATH)/main.o -o exe
 	@echo "Build done"
+
+all: build
+	./exe.exe
 
 clean:
 	rm -f $(OUTPUT_PATH)/*.*

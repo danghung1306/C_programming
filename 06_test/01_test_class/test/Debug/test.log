@@ -1,0 +1,4 @@
+﻿  Source.cpp
+C:\Users\dphbe\Desktop\git\C_programming\06_test\01_test_class\test\Source.cpp(34,20): error C2248: 'cha::choCon': cannot access protected member declared in class 'cha'
+C:\Users\dphbe\Desktop\git\C_programming\06_test\01_test_class\test\Source.cpp(12): message : see declaration of 'cha::choCon'
+C:\Users\dphbe\Desktop\git\C_programming\06_test\01_test_class\test\Source.cpp(5): message : see declaration of 'cha'
