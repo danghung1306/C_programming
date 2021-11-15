@@ -25,13 +25,25 @@ public:
     }
 };
 
-class MyDataBase{
-    DateBaseConnect dbC;
+class MockDB : public DateBaseConnect{
 public:
-    MyDataBase(DateBaseConnect &_dbC): dbC(_dbC){}
+    MOCK_METHOD0(fetchRecord, int());
+    MOCK_METHOD1(logout, bool(string username));
+    MOCK_METHOD2(login,bool(string username, string password));
+};
+
+class MyDataBase{
+    DateBaseConnect * dbC; //Để cho th này ko tạo new object nên dùng tham chiếu hoặc con trỏ.
+	//để xuống Init thì cái hàm login nó được gọi bởi thằng MockDB ở trên trả về giá trị chứ new 
+	//object thì khi gọi nó gọi login của new object chứ ko gọi của th MockDB.
+public:
+    MyDataBase(DateBaseConnect *dbC){
+        this->dbC = dbC;
+    }
+
     int Init(string username, string password)
     {
-        if(dbC.login(username,password)!=true)
+        if(dbC->login(username,password)!=true)
         {
             cout << "DB FAILURE"<<endl;
             return -1;
@@ -44,22 +56,17 @@ public:
     }
 };
 
-class MockDB : public DateBaseConnect{
-public:
-    MOCK_METHOD0(fetchRecord, int());
-    MOCK_METHOD1(logout, bool(string username));
-    MOCK_METHOD2(login,bool(string username, string password));
-};
+~MyDataBase(){delete dbC;}
 
 TEST(MyDBTest, LoginTest)
 {
     MockDB mdb;
-    MyDataBase db(mdb);
+    MyDataBase db(&mdb);
     EXPECT_CALL(mdb,login("hung","dang")).Times(1).WillOnce(Return(true));
 
-    int returnValue = db.Init("hund", "dang");
+    int returnValue = db.Init("hung", "dangp");
 
-    //EXPECT_EQ(returnValue,1);
+    EXPECT_EQ(returnValue,1);
 }
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
